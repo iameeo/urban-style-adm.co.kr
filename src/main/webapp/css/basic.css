@@ -1,0 +1,107 @@
+@charset "utf-8";
+
+/* basic css */
+* {
+	padding: 0;
+	margin: 0;
+	font-size: 12px;
+	font-family: 'Nanum Gothic', sans-serif;
+	text-decoration: none;
+	font-weight:normal;
+}
+
+abbr, article, aside, audio, bb, canvas, datagrid, datalist, details,
+	dialog, eventsource, figure, footer, header, mark, menu, meter, nav,
+	output, progress, section, time, video, m {
+	padding: 0;
+	margin: 0;
+	display: block;
+}
+
+body {
+	font-family: dotum, Arial, sans-serif;
+	color: #5d5d5d;
+}
+
+ul, ol {
+	list-style: none;
+}
+
+dl, dt, dd, ul, ol, li {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+h1, h2, h3, h4, p {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	font-size: 13px;
+}
+
+img {
+	border: 0px;
+	vertical-align: middle;
+}
+
+img.db {
+	display: block;
+}
+
+table {
+	border-spacing: 0px;
+	border: 0px;
+	border-collapse: collapse;
+}
+
+address, hr, .dn {
+	display: none;
+}
+
+form {
+	display: inline;
+}
+
+fieldset {
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+
+legend, caption, hr {
+	display: none;
+}
+
+/* a css */
+a {
+	text-decoration: none;
+	color: black;
+}
+
+a:link {
+	text-decoration: none;
+}
+
+a:visited {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+/* form tag css */
+input, textarea, select {
+	padding: 0;
+	margin: 0;
+	vertical-align: middle;
+	outline: 0;
+	font-family: dotum, Arial, sans-serif;
+	font-size: 12px;
+	color: #898989;
+}
+
+iframe {
+	border: 0;
+}

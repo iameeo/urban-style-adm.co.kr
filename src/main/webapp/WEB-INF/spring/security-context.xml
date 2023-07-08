@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+           http://www.springframework.org/schema/security
+           http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	<http auto-config='true'>
+		<intercept-url pattern="/css/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/js/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/images/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+
+		<intercept-url pattern="/index.do" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/login_duplicate.do" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+
+		<!-- 로그인 필요 페이지 -->
+		<intercept-url pattern="/work/*" access="ROLE_USER" />
+		<intercept-url pattern="/dashboard/*" access="ROLE_USER" />
+		<intercept-url pattern="/bbs/*" access="ROLE_USER" />
+		<intercept-url pattern="/suggest/**" access="ROLE_USER" />
+		<intercept-url pattern="/kakao/**" access="ROLE_USER" />
+		<intercept-url pattern="/ddmshu/**" access="ROLE_USER" />
+
+		<form-login login-page="/login/index.do" username-parameter="id"
+			password-parameter="pw" login-processing-url="/login/loginProcess.do"
+			default-target-url="/login/login_success.do" authentication-failure-url="/login/index.do"
+			always-use-default-target='true' />
+			
+			<!-- default-target-url="/login/login_success.do" authentication-failure-url="/login/index.do" -->			
+
+		<session-management>
+			<concurrency-control max-sessions="5"
+				expired-url="/login/login_duplicate.do" />
+		</session-management>
+
+	</http>
+
+	<beans:bean class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler" />
+
+	<authentication-manager>
+		<authentication-provider ref="customAuthenticationProvider"></authentication-provider>
+	</authentication-manager>
+
+	<beans:bean id="loginDao" class="com.danalent.login.dao.LoginDao" />
+	<beans:bean id="customAuthenticationProvider" class="com.danalent.login.CustomAuthenticationProvider" />
+</beans:beans>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+       "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+	<!-- [1] POPUP SETTING -->
+	<definition name="popup" template="/WEB-INF/jsp/common/layout/popup_layout.jsp">
+		<put-attribute name="header" value="/WEB-INF/jsp/common/unit/popup_header.jsp" />
+		<put-attribute name="contents" value="" />
+		<put-attribute name="footer" value="/WEB-INF/jsp/common/unit/popup_footer.jsp" />
+	</definition>
+
+	<!-- [2] BASIC SETTING -->
+	<definition name="layout" template="/WEB-INF/jsp/common/layout/mainpage_layout.jsp">
+		<put-attribute name="header" value="/WEB-INF/jsp/common/unit/mainpage_header.jsp" />
+		<put-attribute name="contents" value="" />
+		<put-attribute name="footer" value="/WEB-INF/jsp/common/unit/mainpage_footer.jsp" />
+	</definition>
+
+	<!-- POPUP DEFAULT -->
+	<definition name="/dashboard/popup/excel" extends="popup">
+		<put-attribute name="contents" value="/WEB-INF/jsp/dashboard/popup/excel.jsp"/>
+	</definition>
+
+	<!--  BASIC DEFAULT -->
+	<definition name="*" extends="layout">
+		<put-attribute name="contents" value="/WEB-INF/jsp/{1}.jsp" />
+	</definition>
+
+	<definition name="*/*" extends="layout">
+		<put-attribute name="contents" value="/WEB-INF/jsp/{1}/{2}.jsp" />
+	</definition>
+
+	<definition name="*/*/*" extends="layout">
+		<put-attribute name="contents" value="/WEB-INF/jsp/{1}/{2}/{3}.jsp" />
+	</definition>
+	
+	<definition name="*/*/*/*" extends="layout">
+		<put-attribute name="contents" value="/WEB-INF/jsp/{1}/{2}/{3}/{4}.jsp" />
+	</definition>	
+
+</tiles-definitions>

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.danalent.dashboard.dao.DashBoardMapper">
+
+	<!-- selectCombineShopList -->
+	<select id="noneNaverApi" resultType="hashmap">
+		SELECT product_shop, product_seq, product_img_sort,SUBSTRING(product_img_url,(LENGTH(product_img_url) - INSTR(REVERSE(product_img_url), ".") + 1)) as ext FROM combine_product_img WHERE product_new_img_url is null and seq <![CDATA[>=]]> 51798 ORDER BY seq ASC;
+	</select>
+	
+	<!-- selectCombineShopList -->
+	<select id="test" resultType="hashmap">
+		SELECT * FROM COMBINE_PRODUCT WHERE product_shop = 'shuline' ORDER BY seq ASC;
+	</select>
+	
+	<update id="test2">
+		UPDATE COMBINE_PRODUCT SET product_color = #{product_color}, product_size = #{product_size} WHERE 
+		seq = ${seq};
+	</update>
+
+	<!-- selectCombineShopList -->
+	<select id="selectCombineShopList" resultType="hashmap">
+		SELECT 
+			seq, shop_url, shop_name, shop_id, shop_pw 
+		FROM combine_shop WHERE shop_open = 'Y'
+		<!-- shopSeq가 있으면 --> 
+		<if test="shopSeq != '' and shopSeq != null">
+			AND seq = ${shopSeq} 
+		</if>			
+		ORDER BY seq ASC;
+	</select>
+
+	<!-- selectCombineProductList -->
+	<select id="selectCombineProductList" resultType="hashmap">
+		SELECT *, (regImgCnt-regConImgCnt) as isComplete FROM (
+			SELECT 
+				CP.product_shop
+				,CONVERT(LEFT(CP.product_regdate,10), CHAR(10)) as product_regdate
+				,COUNT(1) as regCnt
+				,(SELECT COUNT(1) FROM COMBINE_PRODUCT_IMG CPI WHERE date(CPI.product_regdate) = date(CP.product_regdate) AND CPI.product_shop = CP.product_shop) as regImgCnt
+				,(SELECT COUNT(1) FROM COMBINE_PRODUCT_IMG CPI WHERE date(CPI.product_regdate) = date(CP.product_regdate) AND CPI.product_shop = CP.product_shop AND CPI.product_new_img_url IS NOT NULL) as regConImgCnt
+			FROM 
+				COMBINE_PRODUCT CP
+			WHERE DATE(product_regdate) > (NOW() - INTERVAL 50 DAY)
+			GROUP BY CP.product_shop, date(CP.product_regdate)
+		) C JOIN combine_shop CS ON C.product_shop = CS.shop_name
+		WHERE DATE(product_regdate) > (NOW() - INTERVAL 50 DAY)
+		ORDER BY C.product_regdate DESC, CS.seq ASC;
+	</select>
+	
+    <select id="selectCombineProductExcelList" resultType="hashmap">
+    
+		<!-- shopType가 sinsang 이면 --> 
+		<if test="shopType == 'sinsang' ">
+			SET @@group_concat_max_len = 1000000;
+			SET SESSION group_concat_max_len = 1000000;
+			SET GLOBAL group_concat_max_len = 1000000;
+			
+			SELECT 
+				T1.seq
+				,T1.product_code
+				,T1.product_title
+				,T1.product_new_title
+				,T1.product_price
+				,T1.product_price2
+				,T1.product_price3
+				,T1.product_size
+				,T1.product_color
+				,CONVERT(CONCAT(T1.seq,'.jpg'),CHAR) product_title_img
+				,CONCAT(IFNULL((
+					SELECT 
+						CONCAT(
+								'<![CDATA[<]]>img src=',
+								GROUP_CONCAT(product_new_img_url SEPARATOR '<![CDATA[><]]>br/<![CDATA[><]]>img src='),
+								'<![CDATA[>]]>'
+								,'<![CDATA[<]]>br/<![CDATA[><]]>img src=http://gdadmin.lmychoicel.godomall.com/data/skin/front/moment_left/ad/blank.jpg<![CDATA[>]]>'
+							)
+					FROM COMBINE_PRODUCT_IMG T2 WHERE T1.seq = T2.product_seq
+				),'-'),T1.product_text) product_detail_img
+				,CONVERT(T1.product_regdate,CHAR) product_regdate
+				,CASE
+					WHEN product_category = '001'
+					THEN 'CLOTHES'
+					WHEN product_category = '002'
+					THEN 'ANKLE/WALKER'
+					WHEN product_category = '003'
+					THEN 'FLAT/LOFER'
+					WHEN product_category = '004'
+					THEN 'PUMPS/HEEL'
+					WHEN product_category = '005'
+					THEN 'SNEAKERS'
+					WHEN product_category = '006'
+					THEN 'SANDAL'
+					WHEN product_category = '007'
+					THEN 'MULE/SLIPPER'
+					WHEN product_category = '008'
+					THEN 'BOOTS'
+					WHEN product_category = '009'
+					THEN 'ACC'
+					ELSE 'no'
+				END AS product_category
+			FROM COMBINE_PRODUCT T1
+			WHERE left(product_regdate,10) = #{regdate} AND product_shop = #{shopType}
+			ORDER BY product_regdate DESC;
+		</if>	
+		
+		<!-- shopType가 mignonchic 이면 --> 
+		<if test="shopType == 'mignonchic' ">
+			SET @@group_concat_max_len = 1000000;
+			SET SESSION group_concat_max_len = 1000000;
+			SET GLOBAL group_concat_max_len = 1000000;
+			
+			SELECT 
+				 T1.seq
+				,T1.product_shop
+				,T1.product_code
+				,T1.product_title
+				,T1.product_new_title
+				,T1.product_price
+				,T1.product_text as product_price2
+				,T1.product_price3
+				,SUBSTRING(T1.product_size,1,CHAR_LENGTH(T1.product_size)-1) product_size
+				,SUBSTRING(T1.product_color,1,CHAR_LENGTH(T1.product_color)-1) product_color
+				,CONVERT(CONCAT(T1.seq,'.jpg'),CHAR) product_title_img
+				,IFNULL((
+					SELECT 
+						CONCAT(
+								'<![CDATA[<]]>img src=',
+								GROUP_CONCAT(product_new_img_url SEPARATOR '<![CDATA[><]]>br/<![CDATA[><]]>img src='),
+								'<![CDATA[>]]>'
+							)
+					FROM COMBINE_PRODUCT_IMG T2 WHERE T1.seq = T2.product_seq
+				),'-') product_detail_img
+				,CONVERT(T1.product_regdate,CHAR) product_regdate
+				,CASE
+					WHEN product_category = '001'
+					THEN 'CLOTHES'
+					WHEN product_category = '002'
+					THEN 'ANKLE/WALKER'
+					WHEN product_category = '003'
+					THEN 'FLAT/LOFER'
+					WHEN product_category = '004'
+					THEN 'PUMPS/HEEL'
+					WHEN product_category = '005'
+					THEN 'SNEAKERS'
+					WHEN product_category = '006'
+					THEN 'SANDAL'
+					WHEN product_category = '007'
+					THEN 'MULE/SLIPPER'
+					WHEN product_category = '008'
+					THEN 'BOOTS'
+					WHEN product_category = '009'
+					THEN 'ACC'
+					ELSE 'no'
+				END AS product_category
+			FROM COMBINE_PRODUCT T1
+			WHERE left(product_regdate,10) = #{regdate} AND product_shop = #{shopType}
+			ORDER BY product_shop, product_regdate ASC;
+		</if>	
+		
+		<!-- shopType가 sinsang 아니면 --> 
+		<if test="shopType != 'sinsang' or shopType == 'mignonchic' ">
+			SET @@group_concat_max_len = 1000000;
+			SET SESSION group_concat_max_len = 1000000;
+			SET GLOBAL group_concat_max_len = 1000000;
+			
+			SELECT 
+				 T1.seq
+				,T1.product_shop
+				,T1.product_code
+				,T1.product_title
+				,T1.product_new_title
+				,T1.product_price
+				,T1.product_price2
+				,T1.product_price3
+				,SUBSTRING(T1.product_size,1,CHAR_LENGTH(T1.product_size)-1) product_size
+				,SUBSTRING(T1.product_color,1,CHAR_LENGTH(T1.product_color)-1) product_color
+				,CONVERT(CONCAT(T1.seq,'.jpg'),CHAR) product_title_img
+				,IFNULL((
+					SELECT 
+						CONCAT(
+								'<![CDATA[<]]>img src=',
+								GROUP_CONCAT(product_new_img_url ORDER BY product_img_sort asc SEPARATOR '<![CDATA[><]]>br/<![CDATA[><]]>img src='),
+								'<![CDATA[>]]>'
+							)
+					FROM COMBINE_PRODUCT_IMG T2 WHERE T1.seq = T2.product_seq
+				),'-') product_detail_img
+				,CONVERT(T1.product_regdate,CHAR) product_regdate
+				,CASE
+					WHEN product_category = '001'
+					THEN 'CLOTHES'
+					WHEN product_category = '002'
+					THEN 'ANKLE/WALKER'
+					WHEN product_category = '003'
+					THEN 'FLAT/LOFER'
+					WHEN product_category = '004'
+					THEN 'PUMPS/HEEL'
+					WHEN product_category = '005'
+					THEN 'SNEAKERS'
+					WHEN product_category = '006'
+					THEN 'SANDAL'
+					WHEN product_category = '007'
+					THEN 'MULE/SLIPPER'
+					WHEN product_category = '008'
+					THEN 'BOOTS'
+					WHEN product_category = '009'
+					THEN 'ACC'
+					ELSE 'no'
+				END AS product_category
+				,IFNULL((
+					SELECT 
+						CONCAT(
+								'<![CDATA[<]]>img src=',
+								GROUP_CONCAT(
+								
+								CASE
+									WHEN instr(product_img_url,'//')
+									THEN ''
+									ELSE (select tt.shop_url from combine_shop tt where tt.shop_name = t2.product_shop)
+								END
+								, product_img_url ORDER BY product_img_sort asc SEPARATOR '<![CDATA[><]]>br/<![CDATA[><]]>img src='),
+								'<![CDATA[>]]>'
+							)
+					FROM COMBINE_PRODUCT_IMG T2 WHERE T1.seq = T2.product_seq
+				),'-') product_detail_img_zig
+			FROM COMBINE_PRODUCT T1
+			WHERE left(product_regdate,10) = #{regdate} AND product_shop = #{shopType}
+			ORDER BY product_shop, product_regdate ASC;
+		</if>	
+    </select>
+    
+	<update id="updateCombineNaverImg">
+		UPDATE COMBINE_PRODUCT_IMG SET product_new_img_url = #{product_new_img_url} WHERE 
+		product_seq = ${product_seq} and product_img_sort = ${product_img_sort};
+	</update>
+    
+	
+    <select id="selectCombineItemCheck" resultType="java.lang.Integer">
+		SELECT COUNT(1) as cnt FROM COMBINE_PRODUCT WHERE product_code = #{product_code} AND product_shop = #{product_shop};
+    </select>
+	
+	<insert id="insertCombineProduct" useGeneratedKeys="true" keyProperty="product_seq">
+		INSERT INTO COMBINE_PRODUCT(
+			product_shop
+			,product_code 
+			,product_url 
+			,product_title
+			,product_new_title
+			,product_text 
+			,product_price 
+			,product_thumbImg 
+			,product_color
+			,product_size 
+			,product_regdate
+			,product_price2
+			,product_price3
+		) 
+		VALUES 
+		(
+			 #{product_shop}
+			,#{product_code} 
+			,#{product_url}
+			,#{product_title}
+			,#{product_new_title}
+			,#{product_text} 
+			,#{product_price}
+			,#{product_thumbImg}
+			,#{product_color} 
+			,#{product_size} 
+			,now()
+			,#{product_price2}
+			,#{product_price3}
+		);
+	</insert>
+	
+	<insert id="insertCombineDetailImg">
+		INSERT INTO COMBINE_PRODUCT_IMG(
+			product_shop
+			,product_seq
+			,product_img_sort
+			,product_img_url
+			,product_regdate
+		) 
+		VALUES 
+		(
+			 #{product_shop}
+			,#{product_seq}
+			,#{product_img_sort} 
+			,#{product_img_url}
+			,now()
+		);
+	</insert>
+	
+	<!-- titleImgList -->
+	<select id="titleImgList" resultType="hashmap">
+		SELECT t1.seq, t2.shop_name, t2.shop_url, t1.product_thumbImg FROM combine_product t1 join combine_shop t2 on t1.product_shop = t2.shop_name WHERE date(product_regdate) = '2019-09-20';
+	</select>
+	
+	<select id="selectGodoAdminList" resultType="hashmap">
+	
+		select 
+			t1.product_code,T1.seq, T1.product_shop, T1.product_thumbImg, product_title, product_new_title, product_price, product_color, product_size,
+			<!-- case when instr(t2.product_img_url,'http') > 0 then t2.product_img_url else concat(t3.shop_url, t2.product_img_url) end as product_img_url,  -->
+			group_concat(case when instr(t2.product_img_url, 'http') > 0 then t2.product_img_url else concat(t3.shop_url, t2.product_img_url) end) as product_img_url, 
+			t1.product_category
+		 from combine_product t1 join combine_product_img t2 on t1.seq = t2.product_seq join combine_shop t3 on t2.product_shop = t3.shop_name WHERE LEFT(T1.product_regdate,10) = #{date} and T1.product_shop = #{shop_name} and T1.isGodo = 0 AND DATE(t1.product_regdate) > (NOW() - INTERVAL 50 DAY) AND product_new_title is not null group by T1.seq;
+    </select>
+    
+	<update id="updateGodoAdminChange">
+		UPDATE COMBINE_PRODUCT SET isGodo = 1 WHERE seq = ${product_seq};
+	</update>
+	
+	
+	<select id="selectReTitleList" resultType="hashmap">
+		select * from combine_product where (product_new_title is null or product_category is null) and DATE(product_regdate) > (NOW() - INTERVAL 50 DAY) order by seq desc;
+    </select>
+    
+	<update id="updateReTitleUpdate">
+		UPDATE COMBINE_PRODUCT SET product_new_title = #{product_new_title}, product_category = #{product_category} WHERE seq = ${product_seq};
+	</update>
+	
+	<delete id="deleteImgCombine">
+		DELETE FROM combine_product_img WHERE product_seq= ${product_seq} AND product_img_sort > 0;
+	</delete>
+
+</mapper>

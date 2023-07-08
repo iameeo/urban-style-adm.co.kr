@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans 
+		xmlns="http://www.springframework.org/schema/mvc" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:beans="http://www.springframework.org/schema/beans" 
+		xmlns:context="http://www.springframework.org/schema/context" 
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:task="http://www.springframework.org/schema/task" 
+		xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"> <beans:property name="prefix" value="/WEB-INF/jsp/" /> <beans:property name="suffix" value=".jsp" /> <beans:property name="order" value="2" /> </beans:bean> -->
+
+	<!-- Multipart를 받기 위한 리졸버 추가 -->
+	<beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+
+	<!-- ajax통신용 json -->
+	<beans:bean id="jsonVew" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" />
+
+	<!-- Tiles View Setting -->
+	<beans:bean id="tilesViewResolver" class="org.springframework.web.servlet.view.tiles2.TilesViewResolver" />
+	<beans:bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles2.TilesConfigurer">
+		<beans:property name="definitions" value="/WEB-INF/spring/tiles-config.xml" />
+	</beans:bean>
+
+	<!-- AOP -->
+	<aop:aspectj-autoproxy />
+	<beans:bean id="SpringAspectAdapter" class="com.danalent.common.SpringAspectAdapter" />
+
+    <context:component-scan base-package="com.danalent" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+	
+    <context:component-scan base-package="com.danalent">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+	<!-- Interceptor -->
+	<interceptors>
+		<interceptor>
+			<mapping path="/**" />
+			<beans:bean id="SpringInterceptorAdapter" class="com.danalent.common.SpringInterceptorAdapter" />
+		</interceptor>
+	</interceptors>
+	
+	<!-- response cache 제거 -->
+	<interceptors>
+		<beans:bean id="webContentInterceptor" class="org.springframework.web.servlet.mvc.WebContentInterceptor">
+			<beans:property name="cacheSeconds" value="0" />
+			<beans:property name="useExpiresHeader" value="true" />
+			<beans:property name="useCacheControlHeader" value="true" />
+			<beans:property name="useCacheControlNoStore" value="true" />
+		</beans:bean>
+	</interceptors>
+
+	<!-- 이메일 보내기 -->
+	<beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<beans:property name="host" value="smtp.gmail.com" />
+		<beans:property name="port" value="587" />
+		<beans:property name="username" value="joowon1028@gmail.com" />
+		<beans:property name="password" value="wndnjsWkd2" />
+		<beans:property name="javaMailProperties">
+			<beans:props>
+				<beans:prop key="mail.smtp.starttls.enable">true</beans:prop>
+				<beans:prop key="mail.smtp.auth">true</beans:prop>
+				<beans:prop key="mail.smtps.ssl.checkserveridentity">true</beans:prop>
+				<beans:prop key="mail.smtps.ssl.trust">*</beans:prop>
+				<beans:prop key="mail.smtp.ssl.enable">true</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+
+	<!-- 스케쥴러파일이 존재하는 패키지 설정 제거 
+	<task:scheduler id="jobScheduler" pool-size="10" />
+	<task:annotation-driven scheduler="jobScheduler" />
+	-->
+	
+	<!-- Start java exec Setting <context:component-scan base-package="com.**.web"> <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/> <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/> <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/> </context:component-scan> -->
+</beans:beans>

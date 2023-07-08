@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.danalent.login.dao.LoginMapper">
+
+	<resultMap id="loginMap" type="com.danalent.login.dao.LoginVo">
+		<id property="cu_idx" column="cu_idx" />
+		<result property="cp_code" column="cp_code" />
+		<result property="cu_name" column="cu_name" />
+		<result property="cu_right_sub" column="cu_right_sub" />
+		<result property="cp_name_org" column="cp_name_org" />
+	</resultMap>
+	
+	<select id="selectUserDetail" resultMap="loginMap">
+		SELECT t1.cp_code
+			,cu_name
+			,cu_idx
+			,cu_right_sub
+			,cp_name_org
+		FROM [DNEC_DATA].[dbo].[DDT_CP_USER] T1
+			LEFT JOIN [DNEC_DATA].[dbo].[DDT_CP] T2 ON T1.cp_code = T2.cp_code
+		WHERE cu_id = #{userid} and cu_pwd = #{userpw}
+	</select>
+</mapper>
