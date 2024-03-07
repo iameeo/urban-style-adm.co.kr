@@ -5,6 +5,7 @@
 	<table>
 		<thead>
 			<tr>
+				<th></th>
 				<th>IDX</th>
 				<th>SHOP NAME</th>
 				<th>IMG</th>
@@ -17,14 +18,15 @@
 			<tbody>
 				<c:forEach items="${reTitleList}" var="result" varStatus="status">
 					<form name="frm_${result.seq}" action="/api/reTitleUpdate.api" method="post">
-						<input type="hidden" name="scrollValue" value="${scrollValue}" />
-						<input type="hidden" name="product_seq" value="${result.seq}" />
 						<tr>
+							<input type="hidden" name="scrollValue" value="${scrollValue}" />
+							<input type="hidden" name="product_seq" value="${result.seq}" />
+							<td><input type="checkbox" name="chk" class="chk" /></td>
 							<td>${(status.index)+1}</td>
 							<td>${result.product_shop}</td>
 							<td>${result.product_title}</td>
 							<td><img src="${result.product_thumbImg}" style="width:200px;height:200px;" /></td>
-							<td><input type="text" value="${result.product_new_title}" name="product_new_title"/></td>
+							<td><input type="text" value="${result.product_new_title}" name="product_new_title" class="product_new_title" /></td>
 							<td>
 								<select name="product_category">
 									<option value="">=카테고리선택=</option>
@@ -39,11 +41,29 @@
 									<option value="009">ACC</option>
 								</select>								
 							</td>
-							<td><input type="submit" value="submit" onclick="heightPosition();" /></td>
+							<td><input type="submit" value="submit" /></td>
 						</tr>
 					</form>
 				</c:forEach>
 			</tbody>
+			<tr>
+				<td><input type="hidden" name="all_seq" class="all_seq"/> <input type="text" name="all_name" class="all_name"></td>
+				<td>
+					<select name="all_product_category" class="all_product_category">
+						<option value="">=카테고리선택=</option>
+						<option value="001">CLOTHES</option>
+						<option value="002">ANKLE/WALKER</option>
+						<option value="003">FLAT/LOFER</option>
+						<option value="004">PUMPS/HEEL</option>
+						<option value="005">SNEAKERS</option>
+						<option value="006">SANDAL</option>
+						<option value="007">MULE/SLIPPER</option>
+						<option value="008">BOOTS</option>
+						<option value="009">ACC</option>
+					</select>		
+				</td>
+				<td><input type="button" value="일괄저장" onclick="allSubmit()" /></td>
+			</tr>
 	</table>
 </div>
 
@@ -53,6 +73,26 @@
 	
 	if(paramScroll != ""){
 		$("html, body").scrollTop(parseInt(paramScroll));
+	}
+	
+	function allSubmit(){
+		var text = $(".all_name").val();
+		var type = $(".all_product_category").val();
+		
+		$(".chk:checked").each(function(e){
+			var chkThis = $(this);
+			var seq = chkThis.parent().parent().find("input[name=product_seq]").val();
+
+			$.ajax({
+				type : "POST"
+				,url : "/api/reTitleUpdate.api?product_new_title="+text+"&product_category="+type+"&product_seq=" + seq
+				,dataType: "json"
+				,success : function (data) {
+
+				}
+			});
+		});
+		location.href=location.href;
 	}
 
 	function heightPosition(){
