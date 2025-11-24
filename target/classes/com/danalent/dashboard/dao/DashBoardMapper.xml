@@ -31,18 +31,28 @@
 
 	<!-- selectCombineProductList -->
 	<select id="selectCombineProductList" resultType="hashmap">
-		SELECT *, (regImgCnt-regConImgCnt) as isComplete FROM (
-			SELECT 
-				CP.product_shop
-				,CONVERT(LEFT(CP.product_regdate,10), CHAR(10)) as product_regdate
-				,COUNT(1) as regCnt
-				,(SELECT COUNT(1) FROM COMBINE_PRODUCT_IMG CPI WHERE date(CPI.product_regdate) = date(CP.product_regdate) AND CPI.product_shop = CP.product_shop) as regImgCnt
-				,(SELECT COUNT(1) FROM COMBINE_PRODUCT_IMG CPI WHERE date(CPI.product_regdate) = date(CP.product_regdate) AND CPI.product_shop = CP.product_shop AND CPI.product_new_img_url IS NOT NULL) as regConImgCnt
-			FROM 
-				COMBINE_PRODUCT CP
-			WHERE DATE(product_regdate) > (NOW() - INTERVAL 50 DAY)
-			GROUP BY CP.product_shop, date(CP.product_regdate)
-		) C JOIN combine_shop CS ON C.product_shop = CS.shop_name
+		SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
+	
+		SELECT *, (regImgCnt-regConImgCnt) as isComplete
+		FROM (
+		    SELECT
+		        CP.product_shop,
+		        CONVERT(LEFT(CP.product_regdate, 10), CHAR(10)) as product_regdate,
+		        COUNT(1) as regCnt,
+		        (SELECT COUNT(1) 
+		         FROM COMBINE_PRODUCT_IMG CPI 
+		         WHERE DATE(CPI.product_regdate) = DATE(CP.product_regdate) 
+		           AND CPI.product_shop = CP.product_shop) as regImgCnt,
+		        (SELECT COUNT(1) 
+		         FROM COMBINE_PRODUCT_IMG CPI 
+		         WHERE DATE(CPI.product_regdate) = DATE(CP.product_regdate) 
+		           AND CPI.product_shop = CP.product_shop 
+		           AND CPI.product_new_img_url IS NOT NULL) as regConImgCnt
+		    FROM COMBINE_PRODUCT CP
+		    WHERE DATE(product_regdate) > (NOW() - INTERVAL 50 DAY)
+		    GROUP BY CP.product_shop, DATE(CP.product_regdate)  -- product_regdate를 GROUP BY 절에 추가
+		) C
+		JOIN combine_shop CS ON C.product_shop = CS.shop_name
 		WHERE DATE(product_regdate) > (NOW() - INTERVAL 50 DAY)
 		ORDER BY C.product_regdate DESC, CS.seq ASC;
 	</select>
@@ -172,8 +182,8 @@
 				,T1.product_price
 				,T1.product_price2
 				,T1.product_price3
-				,SUBSTRING(T1.product_size,1,CHAR_LENGTH(T1.product_size)-1) product_size
-				,SUBSTRING(T1.product_color,1,CHAR_LENGTH(T1.product_color)-1) product_color
+				,T1.product_size
+				,T1.product_color
 				,CONVERT(CONCAT(T1.seq,'.jpg'),CHAR) product_title_img
 				,IFNULL((
 					SELECT 
@@ -222,6 +232,7 @@
 							)
 					FROM COMBINE_PRODUCT_IMG T2 WHERE T1.seq = T2.product_seq
 				),'-') product_detail_img_zig
+				,product_thumbImg
 			FROM COMBINE_PRODUCT T1
 			WHERE left(product_regdate,10) = #{regdate} AND product_shop = #{shopType}
 			ORDER BY product_shop, product_regdate ASC;

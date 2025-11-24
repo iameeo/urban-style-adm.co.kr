@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@ include file="/WEB-INF/jsp/common/include/inc_declare.jsp"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <div>
 	<table>
@@ -8,6 +9,7 @@
 				<th></th>
 				<th>IDX</th>
 				<th>SHOP NAME</th>
+				<th>REGDATE</th>
 				<th>IMG</th>
 				<th>TITLE</th>
 				<th>NEW TITLE</th>
@@ -24,6 +26,7 @@
 							<td><input type="checkbox" name="chk" class="chk" /></td>
 							<td>${(status.index)+1}</td>
 							<td>${result.product_shop}</td>
+							<td><fmt:formatDate value="${result.product_regdate}" pattern="yyyy-MM-dd HH:mm:ss" /></td>
 							<td>${result.product_title}</td>
 							<td><img src="${result.product_thumbImg}" style="width:200px;height:200px;" /></td>
 							<td><input type="text" value="${result.product_new_title}" name="product_new_title" class="product_new_title" /></td>
@@ -41,7 +44,7 @@
 									<option value="009">ACC</option>
 								</select>								
 							</td>
-							<td><input type="submit" value="submit" /></td>
+							<td><input type="submit" value="submit" onclick="heightPosition();" /></td>
 						</tr>
 					</form>
 				</c:forEach>

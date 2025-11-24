@@ -36,6 +36,7 @@
 		<th style="text-align:center;background-color:#eaeaea;">기타2</th>
 		<th style="text-align:center;background-color:#eaeaea;">카테고리</th>
 		<th style="text-align:center;background-color:#eaeaea;">상세(지그)</th>
+		<th style="text-align:center;background-color:#eaeaea;">썸네일</th>
 	</tr>
 	<c:forEach items="${excelList}" var="result" varStatus="status">
 		<tr>
@@ -55,6 +56,7 @@
 			<td style="text-align:center;">${result.product_price3}</td>
 			<td style="text-align:center;">${result.product_category}</td>
 			<td style="text-align:center;mso-number-format:'\@';">${fn:replace(fn:replace(result.product_detail_img_zig,'< ','&lt;'),' >','>')}</td>
+			<td style="text-align:center;">${result.product_thumbImg}</td>
 		</tr>
 	</c:forEach>
 </table>
